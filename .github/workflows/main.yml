@@ -3,36 +3,28 @@ on:
     types:
     - created
     - edited
-    strategy:
-      matrix:
-        include:
-          - goarch: amd64
-            goos: linux
-          - goarch: amd64
-            goos: darwin
-          - goarch: amd64
-            goos: windows
+
+name: Build Release
+jobs:
+  release:
+    if: startsWith(github.ref, 'refs/tags/') # 只有这次 Commit 是 创建 Tag 时，才进行后续发布操作
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with: 
-        go-version: 1.16
-    - name: Making kubectl-karmada
-      run: make kubectl-karmada
-      env:
-        GOOS: ${{ matrix.goos }}
-        GOARCH: ${{ matrix.goarch }}
-    - name: Packaging...
-      run: tar czf kubectl-karmada-${{ matrix.goos }}-${{ matrix.goarch }}.tgz kubectl-karmada LICENSE
-    - name: Uploading assets...
-      if: ${{ !env.ACT }}
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./kubectl-karmada-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
-        asset_name: kubectl-karmada-${{ matrix.goos }}-${{ matrix.goarch }}.tgz
-        asset_content_type: application/gzip
+      - uses: actions/checkout@master # checkout 代码
+      - uses: actions/setup-go@v2 # 配置 Go 环境
+        with:
+          go-version: "1.17.1" # 改成自己的版本
+
+      - run: go build -o main_linux_amd64 -ldflags "-s -w" ./main # 这 3 条是交叉编译 Go 的指令，酌情修改。
+      - run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o main_windows_amd64.exe -ldflags "-s -w" ./main
+      - run: CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o main_darwin_amd64 -ldflags "-s -w" ./main
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with: # 将下述可执行文件 release 上去
+          files: |
+            main_linux_amd64
+            main_windows_amd64.exe
+            main_darwin_amd64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
