@@ -120,5 +120,4 @@ func main() {
 	}
 
 	log.Println("[+] The result has been saved in the current folder...")
-
 }
