@@ -1,14 +1,13 @@
 on:
   release:
-    types:
-    - created
-    - edited
+#     types:
+#     - created
+#     - edited
 
 name: Build Release
 jobs:
   release:
-  
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@master # checkout 代码
       - uses: actions/setup-go@v2 # 配置 Go 环境
@@ -26,3 +25,4 @@ jobs:
             main_darwin_amd64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GO111MODULE: auto
