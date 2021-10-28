@@ -13,16 +13,13 @@ jobs:
       - uses: actions/setup-go@v2 # 配置 Go 环境
         with:
           go-version: "1.17.1" # 改成自己的版本
-      - run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o main_windows_amd64.exe -ldflags "-s -w" ./main.go
-      
-
       - name: Release
         uses: softprops/action-gh-release@v1
         with: # 将下述可执行文件 release 上去
-          files: |
-            main_linux_amd64
-            main_windows_amd64.exe
-            main_darwin_amd64
+          files: main_windows_amd64.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GO111MODULE: auto
+          shell: cmd
+      - run: CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o main_windows_amd64.exe -ldflags "-s -w" ./main.go
+      
