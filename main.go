@@ -55,7 +55,7 @@ func main() {
 			log.Println("[-] Please run as administrator...")
 			return
 		}
-		log.Println(err)
+		log.Println("[-]",err)
 		return
 	}
 	defer file.Close()
