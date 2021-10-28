@@ -1,8 +1,8 @@
 on:
   release:
-#     types:
-#     - created
-#     - edited
+    types:
+    - created
+    - edited
 
 name: Build Release
 jobs:
