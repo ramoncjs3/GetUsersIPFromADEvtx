@@ -9,10 +9,12 @@ import (
 	"github.com/0xrawsec/golang-evtx/evtx"
 	"github.com/tealeg/xlsx"
 	"log"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -40,15 +42,22 @@ type AllMap struct {
 func main() {
 	log.Println("[+] Already start...")
 
-	//file, err := evtx.OpenDirty("log.evtx")
-	file, err := evtx.OpenDirty("C:\\Windows\\System32\\winevt\\Logs\\Security.evtx")
-	if err != nil {
-		log.Println("[-]", err)
-		log.Println("[-] Please run as administrator...")
+	if len(os.Args) != 2 {
+		log.Println("[-] Usages: main.exe Security.evtx ")
 		return
-
 	}
-	//file, _ := evtx.Open("log.evtx")
+
+	//file, err := evtx.OpenDirty("log.evtx")
+	file, err := evtx.OpenDirty(os.Args[1])
+
+	if err != nil {
+		if strings.Contains(err.Error(), syscall.Errno(5).Error()) {
+			log.Println("[-] Please run as administrator...")
+			return
+		}
+		log.Println(err)
+		return
+	}
 	defer file.Close()
 
 	wg := sync.WaitGroup{}
@@ -120,5 +129,5 @@ func main() {
 	}
 
 	log.Println("[+] The result has been saved in the current folder...")
-	
+
 }
